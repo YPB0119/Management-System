@@ -23,32 +23,40 @@ module.exports = async (req, res) => {
     const body = await parseBody(req);
 
     if (method === 'POST') {
-      const { merchantId, name, price, stock, category = '', description = '' } = body;
+      const {
+        merchantId,
+        name,
+        price,
+        stock,
+        category = '',
+        description = '',
+        imageUrl = '',
+      } = body;
       if (!merchantId || !name || price === undefined || stock === undefined) {
-        return badRequest(res, '缺少必要參數');
+        return badRequest(res, '缺少必要参数');
       }
 
       const merchantCheck = await pool.query('SELECT id FROM merchants WHERE id = $1', [merchantId]);
       if (!merchantCheck.rows.length) {
-        return json(res, 404, { error: '商戶不存在' });
+        return json(res, 404, { error: '商户不存在' });
       }
 
       const { rows } = await pool.query(
         `
-          INSERT INTO products (merchant_id, name, price, stock, category, description)
-          VALUES ($1, $2, $3, $4, $5, $6)
+          INSERT INTO products (merchant_id, name, price, stock, category, description, image_url)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
           RETURNING *;
         `,
-        [merchantId, name, price, stock, category, description],
+        [merchantId, name, price, stock, category, description, imageUrl],
       );
       return json(res, 201, { product: rows[0] });
     }
 
     if (method === 'PUT') {
       const id = Number(req.query?.id || body.id);
-      const { merchantId, name, price, stock, category, description } = body;
+      const { merchantId, name, price, stock, category, description, imageUrl } = body;
       if (!id || !merchantId) {
-        return badRequest(res, '缺少商品編號或商戶信息');
+        return badRequest(res, '缺少商品编号或商户信息');
       }
 
       const ownerCheck = await pool.query('SELECT merchant_id FROM products WHERE id = $1', [id]);
@@ -56,7 +64,7 @@ module.exports = async (req, res) => {
         return json(res, 404, { error: '商品不存在' });
       }
       if (ownerCheck.rows[0].merchant_id !== Number(merchantId)) {
-        return json(res, 403, { error: '無權修改其他商戶的商品' });
+        return json(res, 403, { error: '无权修改其他商户的商品' });
       }
 
       const fields = [];
@@ -72,10 +80,11 @@ module.exports = async (req, res) => {
       addField('stock', stock);
       addField('category', category);
       addField('description', description);
+      addField('image_url', imageUrl);
       values.push(id);
 
       if (!fields.length) {
-        return badRequest(res, '沒有需要更新的內容');
+        return badRequest(res, '没有需要更新的内容');
       }
 
       const { rows } = await pool.query(
@@ -94,7 +103,7 @@ module.exports = async (req, res) => {
       const id = Number(req.query?.id || body.id);
       const { merchantId } = body;
       if (!id || !merchantId) {
-        return badRequest(res, '缺少商品編號或商戶信息');
+        return badRequest(res, '缺少商品编号或商户信息');
       }
 
       const ownerCheck = await pool.query('SELECT merchant_id FROM products WHERE id = $1', [id]);
@@ -102,7 +111,7 @@ module.exports = async (req, res) => {
         return json(res, 404, { error: '商品不存在' });
       }
       if (ownerCheck.rows[0].merchant_id !== Number(merchantId)) {
-        return json(res, 403, { error: '無權刪除其他商戶的商品' });
+        return json(res, 403, { error: '无权删除其他商户的商品' });
       }
 
       await pool.query('DELETE FROM products WHERE id = $1', [id]);
@@ -110,7 +119,7 @@ module.exports = async (req, res) => {
     }
   } catch (err) {
     console.error('products error', err);
-    return json(res, 500, { error: '商品操作失敗' });
+    return json(res, 500, { error: '商品操作失败' });
   }
 };
 

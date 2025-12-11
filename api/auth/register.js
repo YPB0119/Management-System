@@ -13,11 +13,11 @@ module.exports = async (req, res) => {
     const { role, username, password } = body;
 
     if (!role || !username || !password) {
-      return badRequest(res, '請提供角色、用戶名與密碼');
+      return badRequest(res, '请提供角色、用户名与密码');
     }
 
     if (!['merchant', 'buyer'].includes(role)) {
-      return badRequest(res, '角色只允許 merchant 或 buyer');
+      return badRequest(res, '角色只允许 merchant 或 buyer');
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
       );
 
       if (!rows.length) {
-        return json(res, 409, { error: '用戶名已被註冊' });
+        return json(res, 409, { error: '用户名已被注册' });
       }
 
       return json(res, 201, { user: { ...rows[0], role } });
@@ -53,13 +53,13 @@ module.exports = async (req, res) => {
     );
 
     if (!rows.length) {
-      return json(res, 409, { error: '用戶名已被註冊' });
+      return json(res, 409, { error: '用户名已被注册' });
     }
 
     return json(res, 201, { user: { ...rows[0], role } });
   } catch (err) {
     console.error('register error', err);
-    return json(res, 500, { error: '註冊失敗，請稍後再試' });
+    return json(res, 500, { error: '注册失败，请稍后再试' });
   }
 };
 

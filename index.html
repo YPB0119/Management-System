@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>商品交易信息管理系統</title>
+    <title>商品交易信息管理系统</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -11,97 +11,107 @@
       <div class="brand">
         <span class="logo">🛍️</span>
         <div>
-          <div class="title">商品交易信息管理系統</div>
-          <div class="subtitle">商戶 / 購物者一站式管理</div>
+          <div class="title">商品交易信息管理系统</div>
+          <div class="subtitle">商户 / 购物者一站式管理</div>
         </div>
       </div>
       <div class="user-chip" id="user-info" hidden>
         <span id="user-name"></span>
         <span class="tag" id="user-role"></span>
-        <button id="logout-btn" class="ghost">登出</button>
+        <button id="logout-btn" class="ghost">退出登录</button>
       </div>
     </header>
 
     <main class="container">
       <section class="card" id="auth-card">
         <div class="tab-header">
-          <button class="tab active" data-tab="login">登入</button>
-          <button class="tab" data-tab="register">註冊</button>
+          <button class="tab active" data-tab="login">登录</button>
+          <button class="tab" data-tab="register">注册</button>
         </div>
 
         <div class="tab-panel" id="login-panel">
           <div class="grid">
             <label>
-              登入身份
+              登录身份
               <select id="login-role">
-                <option value="buyer">購物者</option>
-                <option value="merchant">商戶</option>
+                <option value="buyer">购物者</option>
+                <option value="merchant">商户</option>
               </select>
             </label>
             <label>
-              用戶名
-              <input id="login-username" type="text" placeholder="輸入用戶名" />
+              用户名
+              <input id="login-username" type="text" placeholder="请输入用户名" />
             </label>
             <label>
-              密碼
-              <input id="login-password" type="password" placeholder="輸入密碼" />
+              密码
+              <input id="login-password" type="password" placeholder="请输入密码" />
             </label>
           </div>
-          <button id="login-btn" class="primary block">登入</button>
-          <p class="hint">測試帳號：商戶 merchant/merchant，購物者 buyer/buyer</p>
+          <button id="login-btn" class="primary block">登录</button>
+          <p class="hint">测试账号：商户 merchant/merchant，购物者 buyer/buyer</p>
         </div>
 
         <div class="tab-panel hidden" id="register-panel">
           <div class="grid">
             <label>
-              註冊身份
+              注册身份
               <select id="reg-role">
-                <option value="buyer">購物者</option>
-                <option value="merchant">商戶</option>
+                <option value="buyer">购物者</option>
+                <option value="merchant">商户</option>
               </select>
             </label>
             <label>
-              用戶名
-              <input id="reg-username" type="text" placeholder="輸入用戶名" />
+              用户名
+              <input id="reg-username" type="text" placeholder="请输入用户名" />
             </label>
             <label>
-              密碼
-              <input id="reg-password" type="password" placeholder="輸入密碼" />
+              密码
+              <input id="reg-password" type="password" placeholder="请输入密码" />
             </label>
             <label class="role-field role-merchant">
-              商戶名稱
-              <input id="reg-shop-name" type="text" placeholder="店鋪名稱" />
+              商户名称
+              <input id="reg-shop-name" type="text" placeholder="请输入店铺名称" />
             </label>
             <label class="role-field role-merchant">
-              聯絡電話
-              <input id="reg-merchant-phone" type="text" placeholder="電話" />
+              联系电话
+              <input id="reg-merchant-phone" type="text" placeholder="请输入电话" />
             </label>
             <label class="role-field role-merchant">
-              聯絡人
-              <input id="reg-merchant-name" type="text" placeholder="商戶聯絡人" />
+              联系人
+              <input id="reg-merchant-name" type="text" placeholder="请输入联系人" />
             </label>
             <label class="role-field role-buyer hidden">
               真实姓名
-              <input id="reg-real-name" type="text" placeholder="姓名" />
+              <input id="reg-real-name" type="text" placeholder="请输入姓名" />
             </label>
             <label class="role-field role-buyer hidden">
-              聯絡電話
-              <input id="reg-buyer-phone" type="text" placeholder="電話" />
+              联系电话
+              <input id="reg-buyer-phone" type="text" placeholder="请输入电话" />
             </label>
             <label class="role-field role-buyer hidden">
-              收貨地址
-              <input id="reg-address" type="text" placeholder="收貨地址" />
+              收货地址
+              <input id="reg-address" type="text" placeholder="请输入收货地址" />
             </label>
           </div>
-          <button id="register-btn" class="primary block">註冊</button>
+          <button id="register-btn" class="primary block">注册</button>
         </div>
+      </section>
+
+      <section class="card" id="products-home">
+        <div class="card-header">
+          <div>
+            <h2>商品首页</h2>
+            <p class="hint">为您展示所有商品，支持中文名称与描述</p>
+          </div>
+        </div>
+        <div id="product-grid" class="product-grid"></div>
       </section>
 
       <section class="card" id="products-card">
         <div class="card-header">
           <div>
             <h2>商品信息</h2>
-            <p class="hint">瀏覽所有商品，支持中文商品名與描述</p>
+            <p class="hint">列表视图（含库存、分类）</p>
           </div>
           <div class="pill" id="product-count">-- 件</div>
         </div>
@@ -109,11 +119,11 @@
           <table>
             <thead>
               <tr>
-                <th>名稱</th>
-                <th>分類</th>
-                <th>價格</th>
-                <th>庫存</th>
-                <th>商戶</th>
+                <th>名称</th>
+                <th>分类</th>
+                <th>价格</th>
+                <th>库存</th>
+                <th>商户</th>
                 <th>描述</th>
                 <th>操作</th>
               </tr>
@@ -126,31 +136,39 @@
       <section class="card hidden" id="merchant-products">
         <div class="card-header">
           <div>
-            <h2>商戶商品管理</h2>
-            <p class="hint">新增 / 編輯 / 刪除商品</p>
+            <h2>商户商品管理</h2>
+            <p class="hint">新增 / 编辑 / 删除商品，支持上传图片</p>
           </div>
         </div>
         <form id="product-form" class="grid">
           <input type="hidden" id="product-id" />
           <label>
-            商品名稱
+            商品名称
             <input id="product-name" type="text" required />
           </label>
           <label>
-            價格
+            价格
             <input id="product-price" type="number" min="0" step="0.01" required />
           </label>
           <label>
-            庫存
+            库存
             <input id="product-stock" type="number" min="0" step="1" required />
           </label>
           <label>
-            分類
+            分类
             <input id="product-category" type="text" />
           </label>
           <label class="wide">
             描述
             <textarea id="product-desc" rows="2"></textarea>
+          </label>
+          <label class="wide">
+            商品图片（JPG/PNG，≤5MB）
+            <input id="product-image" type="file" accept="image/png,image/jpeg" />
+            <div class="preview-row">
+              <img id="product-preview" alt="商品图片预览" />
+              <div class="hint">保存后图片将上传至 Vercel Blob 并存储 URL</div>
+            </div>
           </label>
           <div class="actions">
             <button type="submit" class="primary">保存</button>
@@ -162,20 +180,20 @@
       <section class="card hidden" id="buyer-orders">
         <div class="card-header">
           <div>
-            <h2>我的訂單</h2>
-            <p class="hint">查看本人訂單狀態</p>
+            <h2>我的订单</h2>
+            <p class="hint">查看本人订单状态</p>
           </div>
         </div>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>訂單號</th>
+                <th>订单号</th>
                 <th>商品</th>
-                <th>數量</th>
-                <th>金額</th>
-                <th>狀態</th>
-                <th>下單時間</th>
+                <th>数量</th>
+                <th>金额</th>
+                <th>状态</th>
+                <th>下单时间</th>
               </tr>
             </thead>
             <tbody id="buyer-orders-body"></tbody>
@@ -186,20 +204,20 @@
       <section class="card hidden" id="merchant-orders">
         <div class="card-header">
           <div>
-            <h2>訂單管理</h2>
-            <p class="hint">查看所有訂單並更新狀態</p>
+            <h2>订单管理</h2>
+            <p class="hint">查看所有订单并更新状态</p>
           </div>
         </div>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>訂單號</th>
+                <th>订单号</th>
                 <th>商品</th>
-                <th>購買人</th>
-                <th>數量</th>
-                <th>金額</th>
-                <th>狀態</th>
+                <th>购买人</th>
+                <th>数量</th>
+                <th>金额</th>
+                <th>状态</th>
                 <th>操作</th>
               </tr>
             </thead>
@@ -208,6 +226,22 @@
         </div>
       </section>
     </main>
+
+    <div id="product-detail" class="modal hidden">
+      <div class="modal-content">
+        <button class="close" id="detail-close">×</button>
+        <div class="detail-body">
+          <img id="detail-image" alt="商品图片" />
+          <div class="detail-info">
+            <h3 id="detail-name"></h3>
+            <p id="detail-price" class="price"></p>
+            <p id="detail-stock"></p>
+            <p id="detail-category"></p>
+            <p id="detail-desc"></p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div id="toast" class="toast hidden"></div>
     <script src="/app.js"></script>

@@ -1,4 +1,7 @@
 const $ = (id) => document.getElementById(id);
+const PLACEHOLDER =
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="50%" font-size="16" fill="%239ca3af" text-anchor="middle" dominant-baseline="middle">暂无图片</text></svg>';
+const STATUS_OPTIONS = ['待付款', '待发货', '已发货', '已完成'];
 
 const state = {
   user: null,
@@ -13,6 +16,13 @@ function showToast(msg) {
   toastEl.textContent = msg;
   toastEl.classList.remove('hidden');
   setTimeout(() => toastEl.classList.add('hidden'), 2400);
+}
+
+function setPreview(url) {
+  const img = $('product-preview');
+  const real = url && url !== PLACEHOLDER ? url : '';
+  img.src = real || PLACEHOLDER;
+  img.dataset.url = real;
 }
 
 function saveUser(user) {
@@ -54,7 +64,7 @@ function renderUser() {
   userInfo.hidden = false;
   $('auth-card').classList.add('hidden');
   $('user-name').textContent = state.user.username;
-  $('user-role').textContent = state.user.role === 'merchant' ? '商戶' : '購物者';
+  $('user-role').textContent = state.user.role === 'merchant' ? '商户' : '购物者';
 
   if (state.user.role === 'merchant') {
     $('merchant-products').classList.remove('hidden');
@@ -74,7 +84,7 @@ async function apiFetch(url, options = {}) {
   });
   const data = await resp.json().catch(() => ({}));
   if (!resp.ok) {
-    throw new Error(data.error || '請求失敗');
+    throw new Error(data.error || '请求失败');
   }
   return data;
 }
@@ -84,14 +94,14 @@ async function handleLogin() {
   const username = $('login-username').value.trim();
   const password = $('login-password').value;
   if (!username || !password) {
-    return showToast('請填寫用戶名與密碼');
+    return showToast('请填写用户名与密码');
   }
   try {
     const { user } = await apiFetch('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ role, username, password }),
     });
-    showToast('登入成功');
+    showToast('登录成功');
     saveUser(user);
   } catch (err) {
     showToast(err.message);
@@ -115,7 +125,7 @@ async function handleRegister() {
   const payload = { role, username, password };
 
   if (!username || !password) {
-    return showToast('請填寫用戶名與密碼');
+    return showToast('请填写用户名与密码');
   }
 
   if (role === 'merchant') {
@@ -133,7 +143,7 @@ async function handleRegister() {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-    showToast('註冊成功，已自動登入');
+    showToast('注册成功，已自动登录');
     saveUser(user);
   } catch (err) {
     showToast(err.message);
@@ -146,9 +156,28 @@ async function loadProducts() {
     state.products = products || [];
     $('product-count').textContent = `${state.products.length} 件`;
     renderProducts();
+    renderProductGrid();
   } catch (err) {
     showToast(err.message);
   }
+}
+
+function renderProductGrid() {
+  const grid = $('product-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  state.products.forEach((p) => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <img src="${p.image_url || PLACEHOLDER}" alt="${p.name || '商品图片'}" />
+      <div class="name">${p.name || ''}</div>
+      <div class="price">¥${Number(p.price).toFixed(2)}</div>
+      <div class="hint">库存：${p.stock} | 分类：${p.category || '-'}</div>
+    `;
+    card.onclick = () => openDetail(p);
+    grid.appendChild(card);
+  });
 }
 
 function renderProducts() {
@@ -158,7 +187,7 @@ function renderProducts() {
     const tr = document.createElement('tr');
     const isOwner = state.user?.role === 'merchant' && Number(state.user.id) === p.merchant_id;
     tr.innerHTML = `
-      <td>${p.name || ''}</td>
+      <td><button class="ghost" style="padding:0" onclick="return false;">${p.name || ''}</button></td>
       <td>${p.category || '-'}</td>
       <td>¥${Number(p.price).toFixed(2)}</td>
       <td>${p.stock}</td>
@@ -166,6 +195,7 @@ function renderProducts() {
       <td>${p.description || ''}</td>
       <td class="actions"></td>
     `;
+    tr.querySelector('button').onclick = () => openDetail(p);
     const actions = tr.querySelector('.actions');
 
     if (state.user?.role === 'buyer') {
@@ -175,7 +205,7 @@ function renderProducts() {
       qtyInput.value = '1';
       qtyInput.style.width = '64px';
       const buyBtn = document.createElement('button');
-      buyBtn.textContent = '下單';
+      buyBtn.textContent = '下单';
       buyBtn.className = 'primary';
       buyBtn.onclick = () => createOrder(p.id, Number(qtyInput.value));
       actions.append(qtyInput, buyBtn);
@@ -183,12 +213,12 @@ function renderProducts() {
 
     if (isOwner) {
       const edit = document.createElement('button');
-      edit.textContent = '編輯';
+      edit.textContent = '编辑';
       edit.className = 'ghost';
       edit.onclick = () => fillProductForm(p);
 
       const del = document.createElement('button');
-      del.textContent = '刪除';
+      del.textContent = '删除';
       del.className = 'ghost';
       del.onclick = () => deleteProduct(p.id);
       actions.append(edit, del);
@@ -205,17 +235,39 @@ function fillProductForm(product) {
   $('product-stock').value = product.stock;
   $('product-category').value = product.category || '';
   $('product-desc').value = product.description || '';
-  showToast('已載入商品，可修改後保存');
+  setPreview(product.image_url || PLACEHOLDER);
+  $('product-image').value = '';
+  showToast('已载入商品，可修改后保存');
 }
 
 function resetProductForm() {
   $('product-id').value = '';
   $('product-form').reset();
+  $('product-image').value = '';
+  setPreview(PLACEHOLDER);
+}
+
+async function uploadImage(file) {
+  if (!file) return '';
+  if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+    throw new Error('仅支持 JPG/PNG 图片');
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error('图片大小需不超过 5MB');
+  }
+  const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': file.type },
+    body: file,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || '上传失败');
+  return data.url;
 }
 
 async function saveProduct(e) {
   e.preventDefault();
-  if (state.user?.role !== 'merchant') return showToast('僅商戶可管理商品');
+  if (state.user?.role !== 'merchant') return showToast('仅商户可管理商品');
 
   const id = $('product-id').value;
   const payload = {
@@ -225,13 +277,19 @@ async function saveProduct(e) {
     stock: Number($('product-stock').value),
     category: $('product-category').value.trim(),
     description: $('product-desc').value.trim(),
+    imageUrl: $('product-preview').dataset.url || '',
   };
 
   if (!payload.name || Number.isNaN(payload.price) || Number.isNaN(payload.stock)) {
-    return showToast('請輸入完整且正確的商品信息');
+    return showToast('请输入完整且正确的商品信息');
   }
 
+  const file = $('product-image').files[0];
   try {
+    if (file) {
+      payload.imageUrl = await uploadImage(file);
+    }
+
     if (id) {
       await apiFetch(`/api/products?id=${id}`, {
         method: 'PUT',
@@ -253,13 +311,13 @@ async function saveProduct(e) {
 }
 
 async function deleteProduct(id) {
-  if (!confirm('確認刪除該商品？')) return;
+  if (!confirm('确认删除该商品？')) return;
   try {
     await apiFetch(`/api/products?id=${id}`, {
       method: 'DELETE',
       body: JSON.stringify({ merchantId: state.user.id }),
     });
-    showToast('商品已刪除');
+    showToast('商品已删除');
     await loadProducts();
   } catch (err) {
     showToast(err.message);
@@ -267,14 +325,14 @@ async function deleteProduct(id) {
 }
 
 async function createOrder(productId, quantity) {
-  if (state.user?.role !== 'buyer') return showToast('請以購物者身份登入');
-  if (quantity <= 0) return showToast('數量需大於 0');
+  if (state.user?.role !== 'buyer') return showToast('请以购物者身份登录');
+  if (quantity <= 0) return showToast('数量需大于 0');
   try {
     await apiFetch('/api/orders', {
       method: 'POST',
       body: JSON.stringify({ productId, quantity, buyerId: state.user.id }),
     });
-    showToast('下單成功');
+    showToast('下单成功');
     await loadProducts();
     await loadBuyerOrders();
   } catch (err) {
@@ -297,7 +355,7 @@ async function loadBuyerOrders() {
         <td>${o.quantity}</td>
         <td>¥${Number(o.amount).toFixed(2)}</td>
         <td>${renderStatus(o.status)}</td>
-        <td>${new Date(o.created_at).toLocaleString('zh-Hant')}</td>
+        <td>${new Date(o.created_at).toLocaleString('zh-CN')}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -325,7 +383,7 @@ async function loadMerchantOrders() {
         <td class="actions"></td>
       `;
       const sel = document.createElement('select');
-      ['待付款', '待發貨', '已發貨', '已完成'].forEach((s) => {
+      STATUS_OPTIONS.forEach((s) => {
         const opt = document.createElement('option');
         opt.value = s;
         opt.textContent = s;
@@ -345,10 +403,11 @@ async function loadMerchantOrders() {
 }
 
 function renderStatus(status) {
+  const val = status && status.replace('發', '发');
   let cls = 'status wait';
-  if (status === '已發貨') cls = 'status ship';
-  if (status === '已完成') cls = 'status done';
-  return `<span class="${cls}">${status}</span>`;
+  if (val === '已发货') cls = 'status ship';
+  if (val === '已完成') cls = 'status done';
+  return `<span class="${cls}">${val || status}</span>`;
 }
 
 async function updateOrderStatus(orderId, status) {
@@ -357,11 +416,25 @@ async function updateOrderStatus(orderId, status) {
       method: 'PATCH',
       body: JSON.stringify({ orderId, status, merchantId: state.user.id }),
     });
-    showToast('狀態已更新');
+    showToast('状态已更新');
     await loadMerchantOrders();
   } catch (err) {
     showToast(err.message);
   }
+}
+
+function openDetail(product) {
+  $('detail-name').textContent = product.name || '';
+  $('detail-price').textContent = `¥${Number(product.price).toFixed(2)}`;
+  $('detail-stock').textContent = `库存：${product.stock}`;
+  $('detail-category').textContent = `分类：${product.category || '-'}`;
+  $('detail-desc').textContent = `描述：${product.description || '暂无描述'}`;
+  $('detail-image').src = product.image_url || PLACEHOLDER;
+  $('product-detail').classList.remove('hidden');
+}
+
+function closeDetail() {
+  $('product-detail').classList.add('hidden');
 }
 
 function refreshData() {
@@ -384,22 +457,46 @@ function setupTabs() {
   });
 }
 
+function setupPreview() {
+  const input = $('product-image');
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) {
+      setPreview(PLACEHOLDER);
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      showToast('请上传图片文件');
+      input.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => setPreview(e.target.result);
+    reader.readAsDataURL(file);
+  });
+  setPreview(PLACEHOLDER);
+}
+
 function init() {
   setupTabs();
   toggleRoleFields();
+  setupPreview();
   $('reg-role').onchange = toggleRoleFields;
   $('login-btn').onclick = handleLogin;
   $('register-btn').onclick = handleRegister;
   $('logout-btn').onclick = () => {
     clearUser();
-    showToast('已登出');
+    showToast('已退出登录');
   };
   $('product-form').addEventListener('submit', saveProduct);
   $('product-reset').onclick = resetProductForm;
+  $('detail-close').onclick = closeDetail;
+  $('product-detail').addEventListener('click', (e) => {
+    if (e.target.id === 'product-detail') closeDetail();
+  });
   loadUser();
   loadProducts();
 }
 
 document.addEventListener('DOMContentLoaded', init);
-
 

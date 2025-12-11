@@ -13,11 +13,11 @@ module.exports = async (req, res) => {
     const { role, username, password } = body;
 
     if (!role || !username || !password) {
-      return badRequest(res, '請提供角色、用戶名與密碼');
+      return badRequest(res, '请提供角色、用户名与密码');
     }
 
     if (!['merchant', 'buyer'].includes(role)) {
-      return badRequest(res, '角色只允許 merchant 或 buyer');
+      return badRequest(res, '角色只允许 merchant 或 buyer');
     }
 
     const table = role === 'merchant' ? 'merchants' : 'buyers';
@@ -32,20 +32,20 @@ module.exports = async (req, res) => {
     );
 
     if (!rows.length) {
-      return json(res, 401, { error: '用戶不存在或密碼錯誤' });
+      return json(res, 401, { error: '用户不存在或密码错误' });
     }
 
     const user = rows[0];
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) {
-      return json(res, 401, { error: '用戶不存在或密碼錯誤' });
+      return json(res, 401, { error: '用户不存在或密码错误' });
     }
 
     delete user.password_hash;
     return json(res, 200, { user: { ...user, role } });
   } catch (err) {
     console.error('login error', err);
-    return json(res, 500, { error: '登入失敗，請稍後再試' });
+    return json(res, 500, { error: '登录失败，请稍后再试' });
   }
 };
 

@@ -16,7 +16,7 @@ async function parseBody(req) {
   try {
     return JSON.parse(raw);
   } catch (err) {
-    throw new Error('請提供合法的 JSON 請求體');
+    throw new Error('请提供合法的 JSON 请求体');
   }
 }
 
@@ -24,11 +24,11 @@ function methodNotAllowed(res, allow = []) {
   if (allow.length) {
     res.setHeader('Allow', allow.join(', '));
   }
-  return json(res, 405, { error: '不支援的請求方法' });
+  return json(res, 405, { error: '不支持的请求方法' });
 }
 
 function badRequest(res, message) {
-  return json(res, 400, { error: message || '參數錯誤' });
+  return json(res, 400, { error: message || '参数错误' });
 }
 
 module.exports = {

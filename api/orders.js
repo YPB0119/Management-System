@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
     if (method === 'GET') {
       const { role, userId } = req.query || {};
       if (!role || !userId) {
-        return badRequest(res, '缺少角色或用戶編號');
+        return badRequest(res, '缺少角色或用户编号');
       }
 
       if (role === 'merchant') {
@@ -54,7 +54,7 @@ module.exports = async (req, res) => {
     if (method === 'POST') {
       const { buyerId, productId, quantity } = body;
       if (!buyerId || !productId || !quantity || Number(quantity) <= 0) {
-        return badRequest(res, '缺少必要參數或數量不正確');
+        return badRequest(res, '缺少必要参数或数量不正确');
       }
 
       const client = await pool.connect();
@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
         const product = productResult.rows[0];
         if (product.stock < Number(quantity)) {
           await client.query('ROLLBACK');
-          return json(res, 400, { error: '庫存不足' });
+          return json(res, 400, { error: '库存不足' });
         }
 
         const amount = Number(product.price) * Number(quantity);
@@ -85,7 +85,7 @@ module.exports = async (req, res) => {
         const { rows } = await client.query(
           `
             INSERT INTO orders (buyer_id, product_id, quantity, amount, status)
-            VALUES ($1, $2, $3, $4, '待發貨')
+            VALUES ($1, $2, $3, $4, '待发货')
             RETURNING *;
           `,
           [buyerId, productId, quantity, amount],
@@ -96,7 +96,7 @@ module.exports = async (req, res) => {
       } catch (err) {
         await client.query('ROLLBACK');
         console.error('order create error', err);
-        return json(res, 500, { error: '下單失敗' });
+        return json(res, 500, { error: '下单失败' });
       } finally {
         client.release();
       }
@@ -105,10 +105,10 @@ module.exports = async (req, res) => {
     if (method === 'PATCH') {
       const { orderId, status, merchantId } = body;
       if (!orderId || !status || !merchantId) {
-        return badRequest(res, '缺少必要參數');
+        return badRequest(res, '缺少必要参数');
       }
       if (!STATUS_VALUES.includes(status)) {
-        return badRequest(res, '狀態值不合法');
+        return badRequest(res, '状态值不合法');
       }
 
       const orderInfo = await pool.query(
@@ -122,11 +122,11 @@ module.exports = async (req, res) => {
       );
 
       if (!orderInfo.rows.length) {
-        return json(res, 404, { error: '訂單不存在' });
+        return json(res, 404, { error: '订单不存在' });
       }
 
       if (Number(orderInfo.rows[0].merchant_id) !== Number(merchantId)) {
-        return json(res, 403, { error: '無權修改其他商戶的訂單' });
+        return json(res, 403, { error: '无权修改其他商户的订单' });
       }
 
       const { rows } = await pool.query(
@@ -142,7 +142,7 @@ module.exports = async (req, res) => {
     }
   } catch (err) {
     console.error('orders error', err);
-    return json(res, 500, { error: '訂單操作失敗' });
+    return json(res, 500, { error: '订单操作失败' });
   }
 };
 
