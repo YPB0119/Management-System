@@ -20,6 +20,11 @@ module.exports = async (req, res) => {
   }
 
   try {
+    const token = process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_TOKEN;
+    if (!token) {
+      return json(res, 500, { error: '服务端未配置 BLOB_READ_WRITE_TOKEN，无法上传图片' });
+    }
+
     const contentType = req.headers['content-type'] || '';
     if (!ALLOW_TYPES.some((t) => contentType.includes(t))) {
       return json(res, 400, { error: '仅支持 JPG/PNG 图片上传' });
@@ -41,6 +46,7 @@ module.exports = async (req, res) => {
     const { url } = await put(filename, buffer, {
       access: 'public',
       contentType,
+      token,
     });
 
     return json(res, 200, { url });
