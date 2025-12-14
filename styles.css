@@ -313,58 +313,85 @@ tr:hover td {
   background: #f3f4f6;
 }
 
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+.detail-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 30;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
 }
 
-.modal.hidden {
-  display: none;
-}
-
-.modal-content {
-  background: #fff;
-  padding: 16px;
-  border-radius: 12px;
-  max-width: 720px;
-  width: 92%;
-  position: relative;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14);
-}
-
-.modal-content .close {
-  position: absolute;
-  right: 12px;
-  top: 8px;
+.detail-header h2 {
+  margin: 0;
   font-size: 20px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
 }
 
 .detail-body {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 32px;
 }
 
-.detail-body img {
+.detail-image-wrapper {
+  position: sticky;
+  top: 80px;
+}
+
+.detail-image-wrapper img {
   width: 100%;
-  max-height: 360px;
-  object-fit: cover;
+  max-height: 500px;
+  object-fit: contain;
   border-radius: 12px;
   border: 1px solid var(--border);
+  background: #f9fafb;
+}
+
+.detail-info h3 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 700;
 }
 
 .detail-info .price {
   color: var(--primary);
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.detail-meta {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.detail-desc-wrapper {
+  margin-bottom: 24px;
+}
+
+.detail-desc-wrapper h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.detail-desc-wrapper p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.detail-actions {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
 }
 
 @media (max-width: 640px) {
@@ -376,6 +403,23 @@ tr:hover td {
 
   .detail-body {
     grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .detail-image-wrapper {
+    position: static;
+  }
+
+  .detail-image-wrapper img {
+    max-height: 300px;
+  }
+
+  .detail-info h3 {
+    font-size: 20px;
+  }
+
+  .detail-info .price {
+    font-size: 24px;
   }
 }
 

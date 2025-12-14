@@ -335,6 +335,7 @@ async function createOrder(productId, quantity) {
     showToast('下单成功');
     await loadProducts();
     await loadBuyerOrders();
+    handleRoute();
   } catch (err) {
     showToast(err.message);
   }
@@ -424,23 +425,120 @@ async function updateOrderStatus(orderId, status) {
 }
 
 function openDetail(product) {
+  window.location.hash = `#/product/${product.id}`;
+  renderDetailPage(product);
+}
+
+function renderDetailPage(product) {
+  if (!product) return;
+  
   $('detail-name').textContent = product.name || '';
   $('detail-price').textContent = `¥${Number(product.price).toFixed(2)}`;
   $('detail-stock').textContent = `库存：${product.stock}`;
   $('detail-category').textContent = `分类：${product.category || '-'}`;
-  $('detail-desc').textContent = `描述：${product.description || '暂无描述'}`;
+  $('detail-desc').textContent = product.description || '暂无描述';
   $('detail-image').src = product.image_url || PLACEHOLDER;
-  $('product-detail').classList.remove('hidden');
+  
+  const actionsEl = $('detail-actions');
+  actionsEl.innerHTML = '';
+  
+  if (state.user?.role === 'buyer') {
+    const qtyInput = document.createElement('input');
+    qtyInput.type = 'number';
+    qtyInput.min = '1';
+    qtyInput.max = product.stock;
+    qtyInput.value = '1';
+    qtyInput.style.width = '80px';
+    qtyInput.style.padding = '10px';
+    qtyInput.style.border = '1px solid var(--border)';
+    qtyInput.style.borderRadius = '8px';
+    
+    const buyBtn = document.createElement('button');
+    buyBtn.textContent = '立即下单';
+    buyBtn.className = 'primary';
+    buyBtn.style.padding = '12px 24px';
+    buyBtn.onclick = () => {
+      const qty = Number(qtyInput.value);
+      if (qty <= 0 || qty > product.stock) {
+        return showToast('数量不正确');
+      }
+      createOrder(product.id, qty);
+    };
+    
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.gap = '12px';
+    wrapper.style.alignItems = 'center';
+    wrapper.appendChild(qtyInput);
+    wrapper.appendChild(buyBtn);
+    actionsEl.appendChild(wrapper);
+  }
+  
+  const isOwner = state.user?.role === 'merchant' && Number(state.user.id) === product.merchant_id;
+  if (isOwner) {
+    const editBtn = document.createElement('button');
+    editBtn.textContent = '编辑商品';
+    editBtn.className = 'primary';
+    editBtn.style.padding = '12px 24px';
+    editBtn.onclick = () => {
+      fillProductForm(product);
+      window.location.hash = '';
+      showToast('已载入商品信息到编辑表单');
+    };
+    actionsEl.appendChild(editBtn);
+  }
+  
+  showDetailPage();
 }
 
-function closeDetail() {
-  $('product-detail').classList.add('hidden');
+function showDetailPage() {
+  document.querySelectorAll('.card').forEach((card) => {
+    if (card.id !== 'product-detail-page') {
+      card.classList.add('hidden');
+    }
+  });
+  $('product-detail-page').classList.remove('hidden');
+}
+
+function hideDetailPage() {
+  $('product-detail-page').classList.add('hidden');
+  if (state.user) {
+    if (state.user.role === 'merchant') {
+      $('merchant-products').classList.remove('hidden');
+      $('merchant-orders').classList.remove('hidden');
+    } else {
+      $('products-home').classList.remove('hidden');
+      $('products-card').classList.remove('hidden');
+      $('buyer-orders').classList.remove('hidden');
+    }
+  } else {
+    $('products-home').classList.remove('hidden');
+    $('products-card').classList.remove('hidden');
+  }
+}
+
+function handleRoute() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#/product/')) {
+    const productId = Number(hash.split('/')[2]);
+    const product = state.products.find((p) => p.id === productId);
+    if (product) {
+      renderDetailPage(product);
+    } else {
+      showToast('商品不存在');
+      window.location.hash = '';
+      hideDetailPage();
+    }
+  } else {
+    hideDetailPage();
+  }
 }
 
 function refreshData() {
   loadProducts();
   if (state.user?.role === 'buyer') loadBuyerOrders();
   if (state.user?.role === 'merchant') loadMerchantOrders();
+  handleRoute();
 }
 
 function setupTabs() {
@@ -490,12 +588,14 @@ function init() {
   };
   $('product-form').addEventListener('submit', saveProduct);
   $('product-reset').onclick = resetProductForm;
-  $('detail-close').onclick = closeDetail;
-  $('product-detail').addEventListener('click', (e) => {
-    if (e.target.id === 'product-detail') closeDetail();
-  });
+  $('detail-back').onclick = () => {
+    window.location.hash = '';
+    hideDetailPage();
+  };
+  window.addEventListener('hashchange', handleRoute);
   loadUser();
   loadProducts();
+  handleRoute();
 }
 
 document.addEventListener('DOMContentLoaded', init);

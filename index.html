@@ -227,21 +227,30 @@
       </section>
     </main>
 
-    <div id="product-detail" class="modal hidden">
-      <div class="modal-content">
-        <button class="close" id="detail-close">×</button>
-        <div class="detail-body">
+    <section class="card hidden" id="product-detail-page">
+      <div class="detail-header">
+        <button class="ghost" id="detail-back">← 返回</button>
+        <h2>商品详情</h2>
+      </div>
+      <div class="detail-body">
+        <div class="detail-image-wrapper">
           <img id="detail-image" alt="商品图片" />
-          <div class="detail-info">
-            <h3 id="detail-name"></h3>
-            <p id="detail-price" class="price"></p>
-            <p id="detail-stock"></p>
-            <p id="detail-category"></p>
+        </div>
+        <div class="detail-info">
+          <h3 id="detail-name"></h3>
+          <p id="detail-price" class="price"></p>
+          <div class="detail-meta">
+            <span id="detail-stock"></span>
+            <span id="detail-category"></span>
+          </div>
+          <div class="detail-desc-wrapper">
+            <h4>商品描述</h4>
             <p id="detail-desc"></p>
           </div>
+          <div class="detail-actions" id="detail-actions"></div>
         </div>
       </div>
-    </div>
+    </section>
 
     <div id="toast" class="toast hidden"></div>
     <script src="/app.js"></script>
